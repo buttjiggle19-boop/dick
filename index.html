@@ -1,0 +1,1311 @@
+<!-- end list -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PicPopper Mobile Simulator v7.1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* CSS Variables for Modern X/Twitter Mobile Theme */
+        :root {
+            --primary-blue: #1d9bf0; 
+            --x-dark: #000000;
+            --x-light-gray: #16181c; 
+            --x-text-color: #e7e9ea;
+            --x-dim-text: #71767b; 
+            --x-border: #2f3336;
+        }
+
+        /* Base Body and Container Setup */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--x-dark);
+            color: var(--x-text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        .simulator-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--x-dark);
+            min-height: 100vh;
+            position: relative;
+            /* Space for sticky header (55px) and footer (55px) */
+            padding-top: 55px; 
+            padding-bottom: 55px; 
+            box-sizing: border-box;
+        }
+
+        /* ---------------------------------- */
+        /* 1. HEADER & NAVIGATION             */
+        /* ---------------------------------- */
+        .header-container {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--x-dark);
+            z-index: 1000;
+            border-bottom: 1px solid var(--x-border);
+        }
+        
+        .top-header {
+            height: 55px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .header-logo {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--primary-blue);
+            cursor: pointer; 
+        }
+        
+        .header-logo i {
+            margin-right: 5px;
+        }
+        
+        .header .icon {
+             font-size: 20px;
+             color: var(--x-text-color);
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0; 
+        }
+        .avatar:active { transform: scale(0.9); }
+        
+        .header-tabs {
+            display: flex;
+            justify-content: space-around;
+            height: 50px;
+            border-bottom: 1px solid var(--x-border);
+        }
+
+        .tab-item {
+            padding: 0 10px;
+            color: var(--x-dim-text);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab-item.active {
+            color: var(--x-text-color);
+        }
+        
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 4px;
+            background-color: var(--primary-blue);
+            border-radius: 2px;
+            animation: tabUnderline 0.3s ease-out;
+        }
+        
+        /* ---------------------------------- */
+        /* 2. POST DISPLAY & ANIMATION        */
+        /* ---------------------------------- */
+        .feed {
+            min-height: 500px; 
+        }
+
+        .post {
+            padding: 15px;
+            border-bottom: 1px solid var(--x-border);
+            display: flex;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .post-body {
+            flex-grow: 1;
+            padding-left: 10px;
+        }
+        
+        /* Stat Update Animation */
+        .stat-animated {
+            animation: statPulse 0.5s ease-out;
+        }
+        
+        @keyframes statPulse {
+            0% { color: var(--primary-blue); transform: scale(1); }
+            50% { color: var(--primary-blue); transform: scale(1.1); }
+            100% { color: var(--x-dim-text); transform: scale(1); }
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            color: var(--x-dim-text);
+            font-size: 13px;
+            max-width: 450px;
+        }
+        
+        .post-author-name {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .post-author-handle {
+            color: var(--x-dim-text);
+            font-size: 14px;
+        }
+        
+        /* Verified Badge Styling */
+        .verified-badge {
+            color: var(--primary-blue);
+            font-size: 14px;
+            margin-left: 4px;
+            margin-right: 5px;
+        }
+
+        /* ---------------------------------- */
+        /* 2B. POLL STYLING                   */
+        /* ---------------------------------- */
+
+        .poll-container {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .poll-option {
+            border: 1px solid var(--x-border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            padding: 12px 15px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s;
+            font-weight: 500;
+        }
+        
+        .poll-option:hover:not(.voted) {
+            background-color: var(--x-light-gray);
+        }
+
+        .poll-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: rgba(29, 155, 240, 0.2); /* Semi-transparent blue */
+            width: 0;
+            transition: width 0.4s ease-out;
+            z-index: 1;
+        }
+
+        .poll-text-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .poll-option.voted {
+             border-color: var(--primary-blue);
+        }
+
+        .poll-option .percent {
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+
+        .poll-footer {
+            margin-top: 10px;
+            color: var(--x-dim-text);
+            font-size: 14px;
+        }
+
+        /* ---------------------------------- */
+        /* 3. PROFILE PAGE VIEW               */
+        /* ---------------------------------- */
+        #profileView {
+            display: none;
+            padding: 0;
+        }
+        
+        .profile-content-scroll {
+             height: 100%;
+             overflow-y: auto;
+             -webkit-overflow-scrolling: touch;
+        }
+
+        .profile-header-container {
+            position: relative;
+            background-color: var(--x-dark);
+            padding-top: 55px; /* Space for the fixed header */
+        }
+
+        .banner {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #1d9bf0, #8000ff);
+        }
+
+        .profile-details {
+            padding: 0 15px 15px 15px;
+            margin-top: -60px;
+        }
+
+        .profile-page-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--x-dark);
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .stat-item {
+            color: var(--x-dim-text);
+        }
+        .stat-item strong {
+            color: var(--x-text-color);
+            margin-right: 5px;
+        }
+        
+        .follow-button {
+            float: right;
+            background-color: var(--x-text-color);
+            color: var(--x-dark);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: -30px;
+        }
+        
+        .profile-bio, .profile-location, .profile-joined {
+            color: var(--x-text-color);
+            margin-top: 10px;
+            font-size: 15px;
+        }
+        
+        .profile-location i, .profile-joined i {
+            color: var(--x-dim-text);
+            margin-right: 8px;
+        }
+
+        /* ---------------------------------- */
+        /* 4. POST CREATION MODAL             */
+        /* ---------------------------------- */
+        #postModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--x-dark); 
+            z-index: 2000;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--x-dark);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--x-border);
+            padding: 10px 15px;
+            flex-shrink: 0;
+        }
+        
+        .modal-header .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--x-text-color);
+            padding: 5px;
+        }
+        
+        .modal-header button {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .modal-header button:disabled {
+            background-color: #0e486b;
+            cursor: default;
+            opacity: 0.7;
+        }
+        
+        .modal-post-area {
+            display: flex;
+            padding: 15px;
+            flex-grow: 1; 
+        }
+        
+        .modal-textarea {
+            width: 95%;
+            height: 100%;
+            background-color: transparent;
+            border: none;
+            color: var(--x-text-color);
+            font-size: 20px;
+            resize: none;
+            outline: none;
+            padding: 0 0 0 15px;
+            line-height: 1.4;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid var(--x-border);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-footer .icon {
+            color: var(--primary-blue);
+            margin-right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* ---------------------------------- */
+        /* 5. OTHER STYLES (Bottom Nav, Install, Edit Bar) */
+        /* ---------------------------------- */
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 600px;
+            height: 55px;
+            background-color: var(--x-dark);
+            border-top: 1px solid var(--x-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            color: var(--x-dim-text);
+            font-size: 22px;
+            padding: 10px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .nav-item.active {
+            color: var(--primary-blue);
+        }
+        
+        .fab-post {
+            position: fixed;
+            bottom: 70px;
+            right: 15px;
+            background-color: var(--primary-blue);
+            color: white;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            z-index: 1001;
+            right: calc(50% - 300px + 15px);
+        }
+        
+        /* Profile Edit Bar */
+        .profile-input-bar {
+            padding: 10px 15px;
+            background-color: var(--x-light-gray);
+            border-bottom: 1px solid var(--x-border);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .profile-input-bar input[type="text"] {
+            background-color: var(--x-dark);
+            color: var(--x-text-color);
+            border: 1px solid var(--x-border);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 120px;
+        }
+        
+        .profile-input-bar label {
+            color: var(--x-dim-text);
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .profile-input-bar .flex-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .fab-post {
+                right: 15px;
+            }
+        }
+        
+        .install-banner {
+            position: fixed;
+            bottom: 55px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--x-light-gray);
+            color: var(--x-text-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--x-border);
+            z-index: 1001;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body onload="init()">
+
+<div class="simulator-container">
+
+    <div class="header-container" id="headerContainer">
+        <div class="top-header">
+            <div class="avatar" id="headerAvatar" onclick="showProfile('user')">Y</div>
+            <div class="header-logo" onclick="switchTab('home')"><i class="fas fa-camera"></i>PicPopper</div>
+            <i class="far fa-bell icon" onclick="switchTab('notifications')"></i>
+        </div>
+        <div class="header-tabs main-view-tabs" id="headerTabs">
+            <div class="tab-item active" data-tab="home" onclick="switchTab('home')">For You</div>
+            <div class="tab-item" data-tab="search" onclick="switchTab('search')">Trending</div>
+        </div>
+    </div>
+    
+    <div id="mainView" style="display: block;">
+         <div class="profile-input-bar">
+            <label style="color: var(--primary-blue); font-size: 16px;">Edit Your Profile:</label>
+            <div class="flex-row">
+                <label for="displayNameInput">Name:</label>
+                <input type="text" id="displayNameInput" value="YourName" maxlength="15">
+            </div>
+            <div class="flex-row">
+                <label for="followerCountInput">Foll:</label>
+                <input type="text" id="followerCountInput" value="455K" style="max-width: 80px;">
+            </div>
+            <div class="flex-row">
+                <label for="profileBioInput">Bio:</label>
+                <input type="text" id="profileBioInput" value="Self-Proclaimed Bio" maxlength="50" style="max-width: 150px;">
+            </div>
+            <div class="flex-row">
+                <input type="checkbox" id="verifiedBadgeInput" style="width: auto;">
+                <label for="verifiedBadgeInput">Verified</label>
+            </div>
+        </div>
+        
+        <div class="feed" id="feed">
+            </div>
+    </div>
+
+    <div id="profileView" style="display: none;">
+        <div class="profile-header-container">
+            <div class="top-header" style="position: absolute; width: 100%; max-width: 600px; padding: 0 10px; background: none; border-bottom: none;">
+                <i class="fas fa-arrow-left icon" onclick="switchTab('home')" style="cursor:pointer; background: rgba(0,0,0,0.5); padding: 5px 8px; border-radius: 50%; color: white;"></i>
+                <i class="fas fa-ellipsis-v icon" style="background: rgba(0,0,0,0.5); padding: 5px 8px; border-radius: 50%; color: white;"></i>
+            </div>
+            
+            <div class="profile-content-scroll" style="height: calc(100vh - 55px);">
+
+                <div class="banner" id="profileBanner"></div>
+                <div class="profile-details">
+                    <button class="follow-button" id="followButton">Follow</button>
+                    <div class="avatar profile-page-avatar" id="profilePageAvatar">Y</div>
+                    
+                    <h2 style="margin: 0; display: flex; align-items: center;">
+                        <span id="profileDisplayName"></span>
+                        <i class="fas fa-check-circle verified-badge" id="profileVerifiedBadge" style="display: none;"></i>
+                    </h2>
+                    <span style="color: var(--x-dim-text);" id="profileHandle"></span>
+                    
+                    <p class="profile-bio" id="profileBio"></p>
+                    
+                    <div class="profile-location"><i class="fas fa-location-dot"></i><span id="profileLocation"></span></div>
+                    <div class="profile-joined"><i class="fas fa-calendar-alt"></i>Joined <span id="profileJoined"></span></div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item"><strong id="profilePostCount">0</strong> Posts</div>
+                        <div class="stat-item"><strong id="profileFollowingCount">0</strong> Following</div>
+                        <div class="stat-item"><strong id="profileFollowerCount">0</strong> Followers</div>
+                    </div>
+                </div>
+                
+                <div class="header-tabs">
+                    <div class="tab-item active">Posts</div>
+                    <div class="tab-item">Likes (Simulated)</div>
+                </div>
+                
+                <div id="profilePostsFeed" class="feed">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="fab-post" onclick="openPostModal()">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <div class="bottom-nav" id="bottomNav">
+        <div class="nav-item active" data-tab="home" onclick="switchTab('home', this)"><i class="fas fa-house"></i></div>
+        <div class="nav-item" data-tab="search" onclick="switchTab('search', this)"><i class="fas fa-magnifying-glass"></i></div>
+        <div class="nav-item" data-tab="notifications" onclick="switchTab('notifications', this)"><i class="far fa-bell"></i></div>
+        <div class="nav-item" data-tab="messages" onclick="switchTab('messages', this)"><i class="far fa-envelope"></i></div>
+    </div>
+    
+    <div class="install-banner" id="installBanner">
+        <div class="install-banner-text">
+            <i class="fab fa-android"></i>
+            <div>
+                <strong>Install PicPopper to homescreen</strong>
+                <div style="color: var(--x-dim-text); font-size: 12px;">Get the full mobile experience.</div>
+            </div>
+        </div>
+        <button>Install</button>
+        <div class="install-close" onclick="closeBanner()">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+
+</div>
+
+<div id="postModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close-btn" onclick="closePostModal()"><i class="fas fa-times"></i></span>
+            <button id="modalPostButton" onclick="postTweet()" disabled>Post</button>
+        </div>
+        <div class="modal-post-area">
+            <div class="avatar" id="modalAvatar">Y</div>
+            <textarea id="postText" class="modal-textarea" placeholder="What's popping?" oninput="checkPostLength()"></textarea>
+        </div>
+        <div class="modal-footer">
+            <div>
+                <i class="far fa-image icon"></i>
+                <i class="fas fa-bars-staggered icon"></i>
+                <i class="far fa-face-smile icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Global Variables and Constants ---
+    const STORAGE_KEY_POSTS = 'picpopper_user_posts_v7';
+    const STORAGE_KEY_PROFILE = 'picpopper_profile_v7';
+    const STORAGE_KEY_BOT_POSTS = 'picpopper_bot_posts_v7';
+    const STORAGE_KEY_LAST_SESSION = 'picpopper_last_session_v7';
+    const postTextarea = document.getElementById('postText');
+    const feed = document.getElementById('feed');
+    const profilePostsFeed = document.getElementById('profilePostsFeed');
+    const displayNameInput = document.getElementById('displayNameInput');
+    const followerCountInput = document.getElementById('followerCountInput');
+    const profileBioInput = document.getElementById('profileBioInput'); // New Input
+    const verifiedBadgeInput = document.getElementById('verifiedBadgeInput'); // New Input
+    const postModal = document.getElementById('postModal');
+    const modalPostButton = document.getElementById('modalPostButton');
+    const headerAvatar = document.getElementById('headerAvatar');
+    const modalAvatar = document.getElementById('modalAvatar');
+    const profilePageAvatar = document.getElementById('profilePageAvatar');
+    const mainView = document.getElementById('mainView');
+    const profileView = document.getElementById('profileView');
+    const headerTabs = document.getElementById('headerTabs');
+
+    let userPosts = [];
+    let botPosts = [];
+    let currentTab = 'home';
+    let currentProfileView = null; 
+    let statUpdateInterval; 
+    const UPDATE_INTERVAL_MS = 3000; 
+
+    // --- Bot Data Definition ---
+    const botData = [
+        { id: 1000, name: 'CryptoWhale', handle: '@WhaleTrade', initial: 'C', color: '#ffd700', bio: 'I trade crypto and tweet nonsense. Not financial advice. Always FOMO.', location: 'Mars', joined: 'Oct 2021', followers: '850K', following: '120' },
+        { id: 1001, name: 'AI_Geek', handle: '@FutureMind', initial: 'A', color: '#00ccff', bio: 'Exploring the intersection of LLMs and human consciousness. Code is art.', location: 'San Francisco, CA', joined: 'Apr 2020', followers: '1.2M', following: '500', isVerified: true },
+        { id: 1002, name: 'FoodieBabe', handle: '@EatsLife', initial: 'F', color: '#ff69b4', bio: 'If it tastes good, I post it. Professional eater and amateur baker. 🍕', location: 'New York, NY', joined: 'Jan 2018', followers: '350K', following: '980' },
+        { id: 1003, name: 'TechNewsNow', handle: '@TechBuzz', initial: 'T', color: '#00ff00', bio: 'Breaking news in gadgets and innovation. If it plugs in, we cover it.', location: 'Global', joined: 'Nov 2022', followers: '2.1M', following: '15', isVerified: true },
+        { id: 1004, name: 'Minimalist_Z', handle: '@ZenLife', initial: 'Z', color: '#7b1fa2', bio: 'Less is more. Digital declutter advocate. Find peace in the void.', location: 'Kyoto, Japan', joined: 'Jun 2019', followers: '150K', following: '20' },
+    ];
+    
+    // --- Utility Functions ---
+
+    function formatNumber(num) {
+        // Ensure input is a number
+        const n = typeof num === 'string' ? parseFollowers(num) : num;
+
+        if (n >= 1000000000) return (n / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+        return Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    function parseFollowers(followers) {
+        if (!followers) return 50; // Default if empty
+        const f = followers.toUpperCase().trim();
+        if (f.includes('B')) return parseFloat(f.replace('B', '')) * 1000000000;
+        if (f.includes('M')) return parseFloat(f.replace('M', '')) * 1000000;
+        if (f.includes('K')) return parseFloat(f.replace('K', '')) * 1000;
+        return parseInt(f.replace(/,/g, '')) || 50;
+    }
+
+    function timeAgo(timestamp) {
+        const seconds = Math.floor((Date.now() - timestamp) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + "y";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + "mo";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + "d";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + "h";
+        if (interval < 1 && seconds > 59) return Math.floor(seconds / 60) + "m";
+        return Math.floor(seconds) + "s";
+    }
+
+    // --- Persistence and Time-Warp Logic ---
+
+    function calculateOfflineGrowth(post, timeElapsedHours) {
+        if (timeElapsedHours <= 0) return;
+
+        // Growth Factor: More followers = faster growth, plus a log factor for time away
+        const baseFollowers = post.isUser ? parseFollowers(followerCountInput.value) : parseFollowers(post.user.followers);
+        const followerFactor = Math.log10(baseFollowers / 1000 + 1) * 0.5 + 1; // Log scale for follower impact
+        const timeFactor = Math.log10(timeElapsedHours + 1) * 0.5 + 1; 
+        const growthFactor = followerFactor * timeFactor;
+
+        post.baseLikes = Math.floor(post.baseLikes + (timeElapsedHours * 5 * growthFactor * Math.random() * 0.1));
+        post.baseReposts = Math.floor(post.baseReposts + (timeElapsedHours * 2 * growthFactor * Math.random() * 0.1));
+        post.baseComments = Math.floor(post.baseComments + (timeElapsedHours * 1 * growthFactor * Math.random() * 0.1));
+        post.baseViews = Math.floor(post.baseViews + (timeElapsedHours * 50 * growthFactor * Math.random() * 0.1));
+
+        // Poll specific offline growth
+        if (post.poll) {
+            let totalNewVotes = Math.floor(timeElapsedHours * 50 * growthFactor * Math.random() * 0.1);
+            for (let i = 0; i < totalNewVotes; i++) {
+                 // Randomly distribute new votes based on current distribution
+                let totalVotes = post.poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+                if (totalVotes === 0) totalVotes = 1; // Avoid division by zero initially
+                
+                let random = Math.random();
+                let cumulativeProbability = 0;
+                
+                for(let option of post.poll.options) {
+                    cumulativeProbability += option.votes / totalVotes;
+                    if (random <= cumulativeProbability) {
+                        option.votes += 1;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    function loadData() {
+        const now = Date.now();
+        const lastSessionTime = parseInt(localStorage.getItem(STORAGE_KEY_LAST_SESSION) || now);
+        const timeElapsedHours = (now - lastSessionTime) / (3600 * 1000);
+
+        // 1. Load Profile (setting defaults if new)
+        const profileData = JSON.parse(localStorage.getItem(STORAGE_KEY_PROFILE));
+        if (profileData) {
+            displayNameInput.value = profileData.name;
+            followerCountInput.value = profileData.followers;
+            profileBioInput.value = profileData.bio || 'Self-Proclaimed Bio'; // Load Bio
+            verifiedBadgeInput.checked = profileData.isVerified || false; // Load Verified
+        } else {
+             followerCountInput.value = '455K'; // Default
+             profileBioInput.value = 'Self-Proclaimed Bio';
+             verifiedBadgeInput.checked = false;
+        }
+
+
+        // 2. Load and Grow User Posts
+        userPosts = JSON.parse(localStorage.getItem(STORAGE_KEY_POSTS)) || [];
+        userPosts.forEach(post => calculateOfflineGrowth(post, timeElapsedHours));
+        
+        if (userPosts.length === 0) {
+            userPosts = [{
+                id: Date.now(),
+                content: "Welcome! Your stats were updated based on the " + timeElapsedHours.toFixed(2) + " hours you were away. New posts start at 0!",
+                timestamp: Date.now() - (3600 * 1000 * 48), 
+                baseLikes: 50, baseReposts: 10, baseComments: 5, baseViews: 500,
+                isUser: true 
+            },
+            {
+                id: Date.now() + 1,
+                content: "Time for a quick poll! What's the best time to check your simulator stats?",
+                timestamp: Date.now() - (3600 * 1000 * 2),
+                baseLikes: 20, baseReposts: 5, baseComments: 3, baseViews: 300,
+                isUser: true,
+                poll: {
+                    voted: null,
+                    options: [
+                        { text: "Morning Coffee", votes: 400 },
+                        { text: "Lunch Break", votes: 600 },
+                        { text: "Just Before Bed", votes: 900 }
+                    ]
+                }
+            }];
+        }
+
+        // 3. Load and Grow Bot Posts
+        botPosts = JSON.parse(localStorage.getItem(STORAGE_KEY_BOT_POSTS));
+        if (!botPosts || botPosts.length === 0) {
+            botPosts = generateInitialBotPosts();
+        }
+        botPosts.forEach(post => calculateOfflineGrowth(post, timeElapsedHours));
+        
+        updateProfileUI();
+    }
+
+    function generateInitialBotPosts() {
+        let posts = [];
+        botData.forEach(bot => {
+            const base = parseFollowers(bot.followers);
+            
+            // Generate a poll post
+            if (bot.id === 1001) { // AI_Geek posts a poll
+                posts.push({
+                    id: Date.now() + bot.id + 1,
+                    user: bot,
+                    content: "Future of AGI: Will it solve all our problems or create new ones?",
+                    timestamp: Date.now() - (3600 * 1000 * 12),
+                    baseLikes: Math.floor(base * 0.002), baseReposts: Math.floor(base * 0.0005), baseComments: Math.floor(base * 0.0003), baseViews: Math.floor(base * 0.008),
+                    poll: {
+                        voted: null,
+                        options: [
+                            { text: "Solve Everything", votes: 15000 },
+                            { text: "Create New Problems", votes: 25000 },
+                            { text: "Just make better cat videos", votes: 5000 }
+                        ]
+                    }
+                });
+            }
+            
+            // Generate a regular post
+            posts.push({
+                id: Date.now() + bot.id,
+                user: bot,
+                content: ["Just solved a major bug that was eating my weekend. Time for celebratory coffee. ☕", "Unpopular opinion: Pineapple on pizza is *fine*. Don't @ me.", "Remember to take a break and stare at a wall. It's good for your focus."][Math.floor(Math.random() * 3)],
+                timestamp: Date.now() - (3600 * 1000 * (Math.floor(Math.random() * 72) + 1)),
+                baseLikes: Math.floor(base * 0.005), baseReposts: Math.floor(base * 0.001), baseComments: Math.floor(base * 0.0005), baseViews: Math.floor(base * 0.015)
+            });
+        });
+        return posts;
+    }
+
+    function saveData() {
+        const profileData = {
+            name: displayNameInput.value,
+            followers: followerCountInput.value,
+            bio: profileBioInput.value,
+            isVerified: verifiedBadgeInput.checked
+        };
+        localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(profileData));
+        localStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(userPosts));
+        localStorage.setItem(STORAGE_KEY_BOT_POSTS, JSON.stringify(botPosts));
+        localStorage.setItem(STORAGE_KEY_LAST_SESSION, Date.now());
+    }
+    
+    function startStatUpdates() {
+        if (statUpdateInterval) clearInterval(statUpdateInterval);
+        
+        statUpdateInterval = setInterval(() => {
+            const now = Date.now();
+
+            const applyOnlineGrowth = (post) => {
+                if (post.timestamp < now) { 
+                    // Calculate growth based on post's user's followers
+                    const baseFollowers = post.isUser ? parseFollowers(followerCountInput.value) : parseFollowers(post.user.followers);
+                    const followerFactor = Math.log10(baseFollowers / 1000 + 1) * 0.5 + 1; 
+
+                    post.baseLikes += Math.floor(Math.random() * 5 * followerFactor); 
+                    post.baseReposts += Math.floor(Math.random() * 2 * followerFactor); 
+                    post.baseComments += Math.floor(Math.random() * 1 * followerFactor); 
+                    post.baseViews += Math.floor(Math.random() * 25 * followerFactor); 
+
+                    // Automated poll voting (Bot or general audience)
+                    if (post.poll && post.poll.voted === null && Math.random() < 0.5) {
+                        let totalVotes = post.poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+                        let random = Math.random();
+                        let cumulativeProbability = 0;
+                        
+                        // Weighted random selection
+                        for(let option of post.poll.options) {
+                            cumulativeProbability += option.votes / totalVotes;
+                            if (random <= cumulativeProbability) {
+                                option.votes += 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            };
+
+            userPosts.forEach(applyOnlineGrowth);
+            botPosts.forEach(applyOnlineGrowth);
+
+            saveData(); 
+            
+            // Only re-render the *current* active view to optimize performance
+            if (mainView.style.display !== 'none') {
+                 renderFeed();
+            } else if (profileView.style.display !== 'none') {
+                renderProfilePosts();
+            }
+        }, UPDATE_INTERVAL_MS);
+    }
+    
+    function updatePostStats(post) {
+        return {
+            comments: formatNumber(post.baseComments),
+            reposts: formatNumber(post.baseReposts),
+            likes: formatNumber(post.baseLikes),
+            views: formatNumber(post.baseViews)
+        };
+    }
+
+    // --- Poll Logic ---
+
+    function renderPoll(post) {
+        if (!post.poll) return '';
+        
+        const totalVotes = post.poll.options.reduce((sum, opt) => sum + opt.votes, 0);
+        const pollIsActive = post.poll.voted === null;
+        let pollOptionsHTML = '';
+
+        post.poll.options.forEach((option, index) => {
+            const percentage = totalVotes > 0 ? ((option.votes / totalVotes) * 100).toFixed(0) : 0;
+            const votedClass = post.poll.voted === index ? 'voted' : '';
+            const onClickAction = pollIsActive ? `votePoll(${post.id}, ${index}, ${post.isUser})` : '';
+            const displayPercentage = pollIsActive ? '' : `<span class="percent">${percentage}%</span>`;
+            
+            pollOptionsHTML += `
+                <div class="poll-option ${votedClass}" data-index="${index}" onclick="${onClickAction}">
+                    ${!pollIsActive ? `<div class="poll-background" style="width: ${percentage}%;"></div>` : ''}
+                    <div class="poll-text-container">
+                        <span>${option.text}</span>
+                        ${displayPercentage}
+                    </div>
+                </div>
+            `;
+        });
+        
+        const footerText = pollIsActive 
+            ? 'Select an option to vote.' 
+            : `${formatNumber(totalVotes)} votes · Poll ended.`;
+
+        return `
+            <div class="poll-container">
+                ${pollOptionsHTML}
+                <div class="poll-footer">
+                    ${footerText}
+                </div>
+            </div>
+        `;
+    }
+
+    function votePoll(postId, optionIndex, isUserPost) {
+        const postArray = isUserPost ? userPosts : botPosts;
+        const post = postArray.find(p => p.id === postId);
+
+        if (post && post.poll && post.poll.voted === null) {
+            post.poll.voted = optionIndex;
+            post.poll.options[optionIndex].votes += 1;
+            
+            saveData();
+            
+            // Re-render the specific post to show results instantly
+            const postElement = document.getElementById(`post-${postId}`);
+            if (postElement) {
+                // Find the existing poll container and replace it with the new poll HTML
+                const pollContainer = postElement.querySelector('.poll-container');
+                if (pollContainer) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = renderPoll(post);
+                    pollContainer.replaceWith(tempDiv.firstChild);
+                }
+            }
+        }
+    }
+
+    // --- UI Rendering Functions ---
+
+    function updateProfileUI() {
+        // Sanitize name for handle and initial
+        const rawDisplayName = displayNameInput.value.replace(/[^a-zA-Z0-9_]/g, '');
+        const initial = rawDisplayName.charAt(0).toUpperCase() || 'Y';
+        const isVerified = verifiedBadgeInput.checked;
+        
+        // Update avatars
+        headerAvatar.textContent = initial;
+        modalAvatar.textContent = initial;
+        profilePageAvatar.textContent = initial;
+        
+        // Update profile details on the main view feed posts (for instant feedback)
+        // This is a minimal update to prevent unnecessary full feed re-render
+        // Full profile page update happens in renderProfilePosts
+        
+        saveData();
+    }
+    
+    function createPostHTML(post, isUser = true) {
+        const stats = updatePostStats(post);
+        
+        let initial, rawDisplayName, displayName, color, clickHandler, isVerified;
+
+        if (!isUser) {
+            initial = post.user.initial;
+            rawDisplayName = post.user.name;
+            displayName = post.user.handle;
+            color = post.user.color;
+            clickHandler = `showProfile('bot', ${post.user.id})`;
+            isVerified = post.user.isVerified;
+        } else {
+            rawDisplayName = displayNameInput.value.trim() || 'YourName';
+            initial = rawDisplayName.charAt(0).toUpperCase() || 'Y';
+            displayName = `@${rawDisplayName.replace(/[^a-zA-Z0-9_]/g, '')}`;
+            color = 'var(--primary-blue)';
+            clickHandler = `showProfile('user')`;
+            isVerified = verifiedBadgeInput.checked;
+        }
+        
+        const verifiedBadgeHTML = isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+        const pollHTML = renderPoll(post);
+
+        return `
+            <div class="post" id="post-${post.id}">
+                <div class="avatar" style="background-color: ${color};" onclick="${clickHandler}">${initial}</div>
+                <div class="post-body">
+                    <div class="post-header-info">
+                        <span class="post-author-name" onclick="${clickHandler}">${rawDisplayName}</span>
+                        ${verifiedBadgeHTML}
+                        <span class="post-author-handle" onclick="${clickHandler}">${displayName} · ${timeAgo(post.timestamp)}</span>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    ${pollHTML}
+                    <div class="post-actions">
+                        <div class="comment"><i class="far fa-comment"></i> <span class="stat-value">${stats.comments}</span></div>
+                        <div class="repost"><i class="fas fa-retweet"></i> <span class="stat-value">${stats.reposts}</span></div>
+                        <div class="like"><i class="far fa-heart"></i> <span class="stat-value">${stats.likes}</span></div>
+                        <div class="view"><i class="fas fa-chart-simple"></i> <span class="stat-value">${stats.views}</span></div>
+                        <div class="share"><i class="fas fa-arrow-up-from-bracket"></i></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function updateFeedPost(post, element, isUser) {
+        const stats = updatePostStats(post);
+        const actions = element.querySelectorAll('.post-actions .stat-value');
+        
+        // 1. Update Stats with Animation
+        if (actions.length >= 4) {
+            actions.forEach((action, index) => {
+                const newStat = [stats.comments, stats.reposts, stats.likes, stats.views][index];
+                if (action.textContent !== newStat) {
+                    action.textContent = newStat;
+                    action.closest('div').classList.add('stat-animated');
+                    setTimeout(() => action.closest('div').classList.remove('stat-animated'), 500);
+                }
+            });
+        }
+
+        // 2. Update Poll if necessary
+        if (post.poll) {
+            const newPollHTML = renderPoll(post);
+            const existingPollContainer = element.querySelector('.poll-container');
+            if (existingPollContainer) {
+                 // Check if the HTML content changed, only update if needed to preserve state/focus
+                 const tempDiv = document.createElement('div');
+                 tempDiv.innerHTML = newPollHTML;
+                 if (existingPollContainer.innerHTML !== tempDiv.firstChild.innerHTML) {
+                    existingPollContainer.replaceWith(tempDiv.firstChild);
+                 }
+            }
+        }
+    }
+
+    function renderFeed() {
+        let combinedFeed;
+        if (currentTab === 'home') {
+            combinedFeed = [
+                ...userPosts.map(p => ({...p, isUser: true})), 
+                ...botPosts.map(p => ({...p, isUser: false}))
+            ];
+            combinedFeed.sort((a, b) => b.timestamp - a.timestamp);
+
+            feed.innerHTML = ''; // Clear and re-render the whole feed to maintain order
+            combinedFeed.forEach(post => {
+                 feed.insertAdjacentHTML('beforeend', createPostHTML(post, post.isUser));
+            });
+
+        } else if (currentTab === 'search') {
+            feed.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: var(--x-text-color);">Explore & Trending</h2>
+                    <p style="color: var(--x-dim-text);">
+                        Trending Now: **#PicPopperV7** | **#PollSimulator** | **#LiveProfileStats**
+                        <br><br>
+                        This is the simulated **Trending** tab. The feed refreshes every ${UPDATE_INTERVAL_MS/1000} seconds!
+                    </p>
+                </div>
+            `;
+        } else {
+             feed.innerHTML = `<div style="padding: 20px; text-align: center;"><h2 style="color: var(--x-text-color);">${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}</h2><p style="color: var(--x-dim-text);">This tab is currently a **simulation**.</p></div>`;
+        }
+    }
+
+    function renderProfilePosts() {
+        let postsToRender = [];
+        let profileDetails = {};
+        
+        if (currentProfileView === 'user') {
+            postsToRender = userPosts;
+            const rawName = displayNameInput.value.trim() || 'YourName';
+            const handle = `@${rawName.replace(/[^a-zA-Z0-9_]/g, '')}`;
+            const followers = parseFollowers(followerCountInput.value);
+            
+            profileDetails = {
+                name: rawName,
+                handle: handle,
+                avatarInitial: rawName.charAt(0).toUpperCase() || 'Y',
+                avatarColor: 'var(--primary-blue)',
+                bio: profileBioInput.value,
+                location: 'Simulator',
+                joined: 'Today',
+                posts: userPosts.length,
+                followers: formatNumber(followers),
+                following: formatNumber(Math.max(10, Math.floor(followers * 0.05))),
+                isBot: false,
+                isVerified: verifiedBadgeInput.checked
+            };
+        } else {
+            const bot = botData.find(b => b.id === currentProfileView.id);
+            postsToRender = botPosts.filter(p => p.user.id === bot.id);
+            profileDetails = {
+                name: bot.name, handle: bot.handle, avatarInitial: bot.initial, avatarColor: bot.color,
+                bio: bot.bio, location: bot.location, joined: bot.joined, posts: postsToRender.length,
+                followers: bot.followers, following: bot.following, isBot: true, isVerified: bot.isVerified || false
+            };
+        }
+
+        // Update Profile View Details (only done once on view switch)
+        document.getElementById('profileDisplayName').textContent = profileDetails.name;
+        document.getElementById('profileHandle').textContent = profileDetails.handle;
+        document.getElementById('profileBio').textContent = profileDetails.bio;
+        document.getElementById('profileLocation').querySelector('span').textContent = profileDetails.location;
+        document.getElementById('profileJoined').querySelector('span').textContent = profileDetails.joined;
+        document.getElementById('profilePageAvatar').textContent = profileDetails.avatarInitial;
+        document.getElementById('profilePageAvatar').style.backgroundColor = profileDetails.avatarColor;
+        document.getElementById('profileBanner').style.background = `linear-gradient(135deg, ${profileDetails.avatarColor}, #333)`;
+        document.getElementById('profilePostCount').textContent = profileDetails.posts;
+        document.getElementById('profileFollowerCount').textContent = profileDetails.followers;
+        document.getElementById('profileFollowingCount').textContent = profileDetails.following;
+        
+        const followBtn = document.getElementById('followButton');
+        followBtn.style.display = profileDetails.isBot ? 'block' : 'none';
+        
+        const verifiedBadge = document.getElementById('profileVerifiedBadge');
+        verifiedBadge.style.display = profileDetails.isVerified ? 'inline-block' : 'none';
+
+
+        postsToRender.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Clear and re-render the profile posts feed
+        profilePostsFeed.innerHTML = '';
+        postsToRender.forEach(post => {
+            profilePostsFeed.insertAdjacentHTML('beforeend', createPostHTML(post, !profileDetails.isBot));
+        });
+    }
+
+    // --- View Switching Logic ---
+
+    function switchView(view) {
+        // Stop all interval updates before switching view, then re-render the target view
+        if (statUpdateInterval) clearInterval(statUpdateInterval);
+        
+        if (view === 'main') {
+            mainView.style.display = 'block';
+            profileView.style.display = 'none';
+            headerTabs.style.display = 'flex';
+            renderFeed(); // Initial render for main view
+        } else if (view === 'profile') {
+            mainView.style.display = 'none';
+            profileView.style.display = 'block';
+            headerTabs.style.display = 'none';
+            renderProfilePosts(); // Initial render for profile view
+        }
+        
+        // Start the update loop for the newly visible feed
+        startStatUpdates();
+    }
+    
+    function showProfile(type, botId = null) {
+        if (type === 'user') {
+            currentProfileView = 'user';
+        } else if (type === 'bot') {
+            const bot = botData.find(b => b.id === botId);
+            currentProfileView = bot;
+            // Bot profiles should be treated as main/always visible for stat calculations
+        }
+        
+        // Ensure the scroll content is visible
+        const scrollContent = document.querySelector('.profile-content-scroll');
+        if (scrollContent) scrollContent.scrollTop = 0;
+
+        switchView('profile');
+    }
+
+    function switchTab(tabName, navElement = null) {
+        currentTab = tabName;
+        currentProfileView = null; // Clear profile view state
+        switchView('main');
+        
+        document.getElementById('bottomNav').querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-tab') === tabName) {
+                item.classList.add('active');
+            }
+        });
+        
+        document.getElementById('headerTabs').querySelectorAll('.tab-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-tab') === tabName) {
+                item.classList.add('active');
+            }
+        });
+    }
+    
+    // --- Post/Modal Logic ---
+
+    function checkPostLength() {
+        modalPostButton.disabled = postTextarea.value.trim() === "";
+    }
+
+    function openPostModal() {
+        postModal.style.display = 'flex';
+        checkPostLength();
+    }
+
+    function closePostModal() {
+        postModal.style.display = 'none';
+        postTextarea.value = '';
+    }
+
+    function closeBanner() {
+        document.getElementById('installBanner').style.display = 'none';
+    }
+
+    function postTweet() {
+        const content = postTextarea.value.trim();
+        if (content === "") return;
+        
+        // New Stat Logic: Followers influence starting stats
+        const followers = parseFollowers(followerCountInput.value);
+        const base = followers;
+        const followerFactor = Math.log10(base / 1000 + 1); // Log factor to scale stats
+        
+        const newPost = {
+            id: Date.now(),
+            content: content,
+            timestamp: Date.now(),
+            baseLikes: Math.max(1, Math.floor(base * 0.0001 * followerFactor)), 
+            baseReposts: Math.max(1, Math.floor(base * 0.00002 * followerFactor)), 
+            baseComments: Math.max(1, Math.floor(base * 0.00001 * followerFactor)), 
+            baseViews: Math.max(1, Math.floor(base * 0.001 * followerFactor)),
+            isUser: true // Essential flag for post arrays
+        };
+
+        userPosts.push(newPost);
+        
+        switchTab('home'); 
+        closePostModal();
+    }
+
+    // --- Initialization ---
+    function init() {
+        loadData();
+        
+        displayNameInput.addEventListener('input', updateProfileUI);
+        followerCountInput.addEventListener('input', updateProfileUI);
+        profileBioInput.addEventListener('input', updateProfileUI);
+        verifiedBadgeInput.addEventListener('change', updateProfileUI);
+
+        switchTab('home'); // Initial render
+    }
+    
+    // The body onload attribute calls init()
+
+</script>
+
+</body>
+</html>
